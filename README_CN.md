@@ -1,3 +1,5 @@
+<div align="center">
+
 [![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Agent Skills](https://img.shields.io/badge/Agent_Skills-compatible-blue.svg)](https://agentskills.io)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
@@ -6,7 +8,9 @@
 
 检查SKILL.md有没有让AI遵守流程的防丢机制，告诉你缺什么、怎么补。
 
-[English](README.md) | [中文](README_CN.md)
+[English](README.md) · [中文](README_CN.md)
+
+</div>
 
 ## 解决什么问题
 
