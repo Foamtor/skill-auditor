@@ -10,9 +10,9 @@
 
 You install a SKILL.md, give it to an AI agent, and the results are inconsistent: sometimes the AI follows the workflow precisely, sometimes it skips steps, sometimes it drops constraints you thought were clear. The root cause is that the skill lacks mechanisms to prevent the AI from losing track of its own instructions.
 
-skill-auditor scans a SKILL.md file for 10 known anti-loss patterns, reports which ones are present and which are missing, and suggests what to add.
+skill-auditor scans a SKILL.md file for 10 known anti-loss patterns, reports which ones are present and which are missing, and **tells you exactly how to fix each gap** with concrete examples and templates.
 
-**It answers one question: "Will this skill's workflow survive contact with an AI agent, or will key steps and constraints get dropped?"**
+**It answers: "Which steps and constraints will this skill lose during AI execution, and how do I fix that?"**
 
 ## The problem
 
@@ -58,7 +58,7 @@ Not every skill needs all 10. skill-auditor auto-detects the skill type:
 ## What it does NOT do
 
 - ❌ Does not check factual accuracy
-- ❌ Does not fix skills — it reports gaps, you fill them
+- ❌ Does not auto-fix skills — it gives specific fix suggestions, you implement them
 - ❌ Does not guarantee compliance — anti-loss mechanisms reduce drift but can't eliminate it entirely
 - ❌ Does not replace manual review — the script detects mechanism presence; whether the mechanism content is strong enough requires human judgment
 
