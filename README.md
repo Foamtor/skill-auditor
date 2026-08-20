@@ -1,69 +1,66 @@
 # skill-auditor
 
-> Evaluate how well a SKILL.md constrains AI behavior. Find weak spots that cause unstable execution, and get actionable improvement suggestions.
+> Check whether a SKILL.md has the anti-loss mechanisms that prevent AI from dropping steps and constraints during execution.
 
 [English](README.md) | [中文](README_CN.md)
 
 ## What is this?
 
-**skill-auditor evaluates the constraint strength of AI agent skill files.**
+**A reliability checker for AI agent skill files.**
 
-When you write a SKILL.md and give it to an AI agent, the execution results are often inconsistent: sometimes the AI follows the workflow precisely, sometimes it skips steps, sometimes it rationalizes doing less work. The root cause is that most SKILL.md files lack the structural constraints that force AI to comply.
+You install a SKILL.md, give it to an AI agent, and the results are inconsistent: sometimes the AI follows the workflow precisely, sometimes it skips steps, sometimes it drops constraints you thought were clear. The root cause is that the skill lacks mechanisms to prevent the AI from losing track of its own instructions.
 
-skill-auditor scans a SKILL.md file for 10 constraint patterns that are proven to improve execution stability, reports which ones are present and which are missing, and suggests how to strengthen them.
+skill-auditor scans a SKILL.md file for 10 known anti-loss patterns, reports which ones are present and which are missing, and suggests what to add.
 
-**It answers one question: "How likely is an AI agent to actually follow this skill's workflow, and what's missing that causes it to drift?"**
+**It answers one question: "Will this skill's workflow survive contact with an AI agent, or will key steps and constraints get dropped?"**
 
 ## The problem
 
-You write a detailed SKILL.md: "first fetch the source, then download images, then write, then review." The AI says "got it" and skips to step 3.
+LLMs don't have persistent memory. Every session starts fresh. When an AI agent reads a SKILL.md, it processes the instructions probabilistically — it might follow all steps, or it might skip some, or it might rationalize doing less work than specified.
 
-This happens because LLMs:
-- Have no persistent memory — every session starts fresh
-- Follow instructions probabilistically, not deterministically
-- Rationalize skipping steps — "this is simple, I don't need to fetch the source"
+Over time, the community has discovered specific patterns that reduce this drift: anti-rationalization guards that list excuses the AI will try to use, stage gates that force the AI to stop and wait for confirmation, verification scripts that catch "I'm done" claims that aren't actually true. Projects like [Superpowers](https://github.com/obra/superpowers) (24k+ stars) have formalized many of these.
 
-Community projects like [Superpowers](https://github.com/obra/superpowers) (24k+ stars) have developed techniques to solve this: anti-rationalization guards, stage gates, verification scripts, trap checklists. But most skill authors don't know which techniques their skill is missing — until the AI fails and they notice.
+But there's no quick way to check: **does this skill have those anti-loss mechanisms, or is it relying on the AI's good behavior?**
+
+## Who uses this
+
+- **Skill users (primary)**: You installed a third-party skill and the execution is inconsistent. Run skill-auditor to see what anti-loss mechanisms are missing.
+- **Skill authors**: Before publishing, verify your skill has the patterns that make AI comply.
+- **Team leads**: Audit shared skills before rolling them out to the team.
+- **CI pipelines**: Quality gate — reject skills that lack critical anti-loss mechanisms.
 
 ## What it checks
 
-10 constraint dimensions, grouped by what they prevent:
+10 anti-loss dimensions. Each one prevents a specific type of execution drift:
 
-| # | Constraint | What breaks without it |
-|---|-----------|----------------------|
-| 1 | Anti-rationalization guard | AI invents excuses to skip steps |
-| 2 | Stage gates | AI runs through the whole workflow without pausing for confirmation |
-| 3 | Automated verification | AI self-reports "passed" without actually checking |
-| 4 | Decision flowchart | AI gets lost in vague natural-language instructions |
-| 5 | Trap checklist | AI repeats known mistakes others already documented |
-| 6 | Progressive disclosure | Context window overloaded, AI ignores key rules |
-| 7 | Three-layer architecture | Skill tries to do everything, doesn't collaborate with other layers |
-| 8 | Runtime hooks | Pure text instructions with no code-level enforcement |
-| 9 | Context Engineering | Key rules buried in the middle, file too long |
-| 10 | Scoped rules | All rules loaded all the time, including irrelevant ones |
+| # | Anti-loss mechanism | What gets dropped without it |
+|---|-------------------|----------------------------|
+| 1 | Anti-rationalization guard | Steps — AI invents excuses to skip them |
+| 2 | Stage gates | Confirmations — AI runs through without pausing |
+| 3 | Automated verification | Quality — AI self-reports "passed" without checking |
+| 4 | Decision flowchart | Branching — AI gets lost in vague instructions |
+| 5 | Trap checklist | Knowledge — AI repeats known mistakes |
+| 6 | Progressive disclosure | Key rules — context overload causes AI to ignore them |
+| 7 | Three-layer architecture | Context — skill tries to hold everything |
+| 8 | Runtime hooks | Enforcement — pure text has no code-level backup |
+| 9 | Context Engineering | Priority — key rules buried in long files |
+| 10 | Scoped rules | Relevance — irrelevant rules dilute attention |
 
-**Not every skill needs all 10.** skill-auditor auto-detects the skill type and only evaluates applicable constraints:
+Not every skill needs all 10. skill-auditor auto-detects the skill type:
 
-| Skill type | Constraints checked | Example |
-|------------|-------------------|---------|
-| Workflow | 10/10 | Multi-step content creation, software processes |
+| Type | Mechanisms checked | Example |
+|------|-------------------|---------|
+| Workflow | 10/10 | Multi-step pipelines, content creation |
 | Tool | 7/10 | Script wrappers, CLI tools |
-| Reference | 4/10 | Cheat sheets, API docs |
-| Pattern | 3/10 | Methodologies, thinking frameworks |
-
-## Who needs this
-
-- **Skill authors**: Find weak spots before publishing — which missing constraint will cause the AI to drift?
-- **Team leads**: Audit shared skills across a team's agent setup — are they robust enough for production use?
-- **CI pipelines**: Quality gate — reject skills that lack critical constraints
-- **AI users**: Evaluate third-party skills before installing — is this skill well-constrained or will it produce inconsistent results?
+| Reference | 4/10 | Cheat sheets, lookups |
+| Pattern | 3/10 | Methodologies, frameworks |
 
 ## What it does NOT do
 
-- ❌ Does not check factual accuracy of skill content
-- ❌ Does not fix skills — it reports weak spots, you strengthen them
-- ❌ Does not guarantee AI compliance — constraint strength is one factor; model capability, context, and task complexity also matter
-- ❌ Does not replace manual review — the script detects patterns objectively; supplement with subjective judgment (are the excuses specific enough? do traps have real test dates?)
+- ❌ Does not check factual accuracy
+- ❌ Does not fix skills — it reports gaps, you fill them
+- ❌ Does not guarantee compliance — anti-loss mechanisms reduce drift but can't eliminate it entirely
+- ❌ Does not replace manual review — the script detects mechanism presence; whether the mechanism content is strong enough requires human judgment
 
 ## Install
 
@@ -77,24 +74,14 @@ Or:
 git clone https://github.com/Foamtor/skill-auditor.git ~/.agents/skills/skill-auditor
 ```
 
-Compatible with: Claude Code, OpenAI Codex, Cursor, Gemini CLI, Hermes Agent, and any tool that supports the [Agent Skills standard](https://agentskills.io).
-
 ## Usage
 
 ```bash
 python3 scripts/audit_skill.py /path/to/SKILL.md
-
-# JSON output for CI
 python3 scripts/audit_skill.py /path/to/SKILL.md --json
 ```
 
-### Exit codes
-
-| Code | Meaning |
-|------|---------|
-| 0 | All required constraints present |
-| 1 | Critical constraints missing |
-| 2 | Parameter error |
+Exit codes: 0 = all critical mechanisms present, 1 = critical mechanisms missing, 2 = parameter error.
 
 ## License
 
