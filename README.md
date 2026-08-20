@@ -2,8 +2,6 @@
 
 > Detect and score SKILL.md instruction-following quality. Auto-detects skill type, selects applicable dimensions, outputs objective audit report.
 
-## What is this?
-
 An [Agent Skills](https://agentskills.io) that audits other SKILL.md files against 10 evidence-based techniques for making AI follow workflows reliably. Based on [Superpowers](https://github.com/obra/superpowers) (24k+ stars), the Agent Skills standard, and 3 months of production content creation experience.
 
 ## Why?
@@ -35,7 +33,6 @@ python3 scripts/audit_skill.py /path/to/SKILL.md --json
 ### Example output
 
 ```
-## Skill审阅报告：ai-frontier-notes
 类型：工作流型（检测到步骤流程）
 适用维度：10/10
 
@@ -47,10 +44,6 @@ python3 scripts/audit_skill.py /path/to/SKILL.md --json
 | ... | ... | ... | ... | ... |
 
 总分：5✅ 3⚠️ 2❌（共10项）
-
-### 改进建议（按优先级排序）
-1. **[最高]** 阶段门禁：未检测到阶段门禁
-2. **[最高]** Context Engineering：文件47858B过大
 ```
 
 ### Exit codes
@@ -83,7 +76,7 @@ Not all 10 dimensions apply to every skill. A 200-word reference skill shouldn't
 | 3 | Automated verification | Executable scripts that verify compliance |
 | 4 | Decision flowchart | Explicit branching logic, not vague "then" |
 | 5 | Trap checklist | Known errors from real-world testing, with dates |
-| 6 | Progressive disclosure | Layered loading: triggers → details → references |
+| 6 | Progressive disclosure | Layered loading: triggers, details, references |
 | 7 | Three-layer architecture | Integration with AGENTS.md and MCP |
 | 8 | Runtime hooks | Code-level enforcement (pre-execution) |
 | 9 | Context Engineering | Key rules front-loaded, total size reasonable |
@@ -92,10 +85,6 @@ Not all 10 dimensions apply to every skill. A 200-word reference skill shouldn't
 ### Objective + Subjective
 
 The script provides **objective detection** (keyword patterns, file structure, size checks). For a complete audit, an AI agent should supplement with **subjective judgment** (are the excuses specific enough? do traps have real test dates? does the flowchart cover all branches?).
-
-## 10 techniques article
-
-For the full methodology behind these 10 dimensions, see the companion article: [让AI遵守你的工作流程：10个从实战中提炼的Skill设计技巧](https://github.com/Foamtor/skill-auditor/blob/main/article.md)
 
 ## License
 
