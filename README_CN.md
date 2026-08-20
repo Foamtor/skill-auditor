@@ -1,66 +1,87 @@
+[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Agent Skills](https://img.shields.io/badge/Agent_Skills-compatible-blue.svg)](https://agentskills.io)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
+
 # skill-auditor
 
-[English](README.md) | 中文
+检查SKILL.md有没有让AI遵守流程的防丢机制，告诉你缺什么、怎么补。
 
-> 检测SKILL.md是否有防丢机制，预防AI执行时丢失关键环节和约束。
-
-## 这是什么
-
-**AI agent skill文件的可靠性检查工具。**
-
-你装了一个SKILL.md交给AI用，结果不稳定：有时AI严格按流程走，有时跳过步骤，有时丢失你以为写得很清楚的约束。根本原因是skill缺少防止AI丢失指令的机制。
-
-skill-auditor扫描SKILL.md中的10个已知防丢模式，报告哪些存在、哪些缺失，并**给出具体的改进方案**，告诉你怎么补、补什么、参考什么写法。
-
-**它回答："这个skill执行时会丢掉哪些环节和约束，怎么补回来？"**
+[English](README.md) | [中文](README_CN.md)
 
 ## 解决什么问题
 
-大语言模型没有持久记忆，每次会话从零开始。AI读取SKILL.md时，对指令的遵循是概率性的，可能全部遵守，也可能跳过某些步骤，也可能合理化偷工减料。
+你写了一个SKILL.md交给AI用，效果不稳定：有时严格按流程走，有时跳过步骤，有时丢失你以为写得很清楚的约束。根本原因是skill缺少迫使AI遵守的结构性模式。
 
-社区已经发现了能减少这种漂移的特定模式：反合理化守卫列出AI会尝试的借口、阶段门禁强制AI停下来等确认、验证脚本戳穿"我做完了"的虚假报告。[Superpowers](https://github.com/obra/superpowers)（24k+ stars）等项目已经将这些模式系统化。
+## 快速开始
 
-但没有快速的方式检查：**这个skill有没有这些防丢机制，还是在靠AI的自觉性？**
+```bash
+npx skills add Foamtor/skill-auditor
+```
+
+```bash
+python3 scripts/audit_skill.py /path/to/your-skill/SKILL.md
+```
+
+输出示例：
+
+```
+类型：工作流型（检测到步骤流程）
+适用维度：10/10
+
+  ✅  反合理化守卫
+  ❌  阶段门禁           — 缺失。AI会一口气跑完不停下。
+  ✅  验证脚本
+  ❌  陷阱清单           — 缺失。AI会重复已知错误。
+  ✅  渐进式加载
+  ✅  Context Engineering
+  ...
+
+评分：7 通过，0 部分，3 未通过
+
+改进方案：
+  1. [关键] 加阶段门禁 — 强制AI在关键节点停下来等确认。
+     参考：ruanzhu-from-scratch 的 G0-G4 门禁表。
+  2. [关键] 加陷阱清单 — 记录已知的失败模式。
+     参考：ai-frontier-notes 中带日期的 "⚠️" 条目。
+```
+
+## 检查什么
+
+10个防止AI执行漂移的模式：
+
+| 模式 | 没有它会怎样 |
+|------|------------|
+| 反合理化守卫 | AI编造借口跳过步骤 |
+| 阶段门禁 | AI一口气跑完不等确认 |
+| 验证脚本 | AI说"做完了"但没实际检查 |
+| 决策流程图 | AI在模糊指令中迷失 |
+| 陷阱清单 | AI重复别人已经记录过的错误 |
+| 渐进式加载 | context过载，AI忽略关键规则 |
+| 三层架构 | 一个文件塞所有内容 |
+| Runtime Hooks | 纯文本没有代码级强制 |
+| Context Engineering | 关键规则埋在长文件中间 |
+| Scoped Rules | 不相关的规则稀释AI注意力 |
+
+不是每个skill都需要10个。脚本自动判断类型，只检查适用的：
+
+- **工作流型**（多步骤流程）：10个全查
+- **工具型**（脚本封装）：7个
+- **参考型**（速查表）：4个
+- **模式型**（方法论）：3个
 
 ## 给谁用
 
-- **Skill使用者（主要）**：装了第三方skill，执行不稳定，跑一下看缺了哪些防丢机制
-- **Skill作者**：发布前验证skill有没有让AI遵守的模式
-- **团队负责人**：推给团队前审计共享skill的可靠性
-- **CI管线**：质量门禁，拒绝缺少关键防丢机制的skill
+**装了第三方skill，效果不稳定。** 跑一下看缺了什么。
 
-## 10个防丢维度
+**自己写skill，想做得更靠谱。** 发布前检查一遍。
 
-每个维度防止一种特定的执行漂移：
-
-| # | 防丢机制 | 没有它会丢什么 |
-|---|---------|--------------|
-| 1 | 反合理化守卫 | 丢步骤：AI编造借口跳过 |
-| 2 | 阶段门禁 | 丢确认：AI一口气跑完不停下 |
-| 3 | 自动化验证 | 丢质量：AI自我报告"通过"而不检查 |
-| 4 | 决策流程图 | 丢分支：AI在模糊指令中迷失 |
-| 5 | 陷阱清单 | 丢知识：AI重复已知错误 |
-| 6 | 渐进式加载 | 丢规则：context过载导致AI忽略关键指令 |
-| 7 | 三层架构 | 丢上下文：一个文件塞所有内容 |
-| 8 | Runtime Hooks | 丢强制：纯文本没有代码级备份 |
-| 9 | Context Engineering | 丢优先级：关键规则埋在长文件里 |
-| 10 | Scoped Rules | 丢注意力：不相关的规则稀释关注 |
-
-不是每个skill都需要10个。自动判断类型：
-
-| 类型 | 检查机制数 | 示例 |
-|------|-----------|------|
-| 工作流型 | 10/10 | 多步骤流水线、内容创作 |
-| 工具型 | 7/10 | 脚本封装、CLI工具 |
-| 参考型 | 4/10 | 速查表、查找表 |
-| 模式型 | 3/10 | 方法论、分析框架 |
+**团队共用skill，要推给其他人。** 当质量门禁用。
 
 ## 不做什么
 
-- ❌ 不检查内容的事实准确性
-- ❌ 不自动修复skill，但给出具体的改进方案，你来实施
-- ❌ 不保证AI遵守，防丢机制降低漂移但不能完全消除
-- ❌ 不替代人工审阅，脚本检测机制是否存在，机制内容是否足够强需要人工判断
+- 不检查内容的事实准确性
+- 不自动修skill（给建议，你来改）
+- 不保证AI一定遵守（防丢机制降低漂移，不能完全消除）
 
 ## 安装
 
@@ -68,21 +89,20 @@ skill-auditor扫描SKILL.md中的10个已知防丢模式，报告哪些存在、
 npx skills add Foamtor/skill-auditor
 ```
 
-或：
-
 ```bash
 git clone https://github.com/Foamtor/skill-auditor.git ~/.agents/skills/skill-auditor
 ```
 
-## 使用
+兼容所有支持 [Agent Skills 标准](https://agentskills.io) 的工具：Claude Code、Codex、Cursor、Gemini CLI、Hermes Agent 等。
+
+## CI 集成
 
 ```bash
-python3 scripts/audit_skill.py /path/to/SKILL.md
-python3 scripts/audit_skill.py /path/to/SKILL.md --json
+python3 scripts/audit_skill.py my-skill/SKILL.md || echo "Skill质量检查未通过"
 ```
 
-退出码：0=所有关键机制存在，1=关键机制缺失，2=参数错误。
+退出码：0=通过，1=关键缺失，2=参数错误。
 
-## 开源协议
+## 协议
 
-MIT
+[MIT](LICENSE)

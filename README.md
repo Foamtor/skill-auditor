@@ -1,66 +1,87 @@
+[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Agent Skills](https://img.shields.io/badge/Agent_Skills-compatible-blue.svg)](https://agentskills.io)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
+
 # skill-auditor
 
-> Check whether a SKILL.md has the anti-loss mechanisms that prevent AI from dropping steps and constraints during execution.
+Checks whether a SKILL.md has the structures that keep AI agents on track — and tells you what's missing and how to fix it.
 
 [English](README.md) | [中文](README_CN.md)
 
-## What is this?
-
-**A reliability checker for AI agent skill files.**
-
-You install a SKILL.md, give it to an AI agent, and the results are inconsistent: sometimes the AI follows the workflow precisely, sometimes it skips steps, sometimes it drops constraints you thought were clear. The root cause is that the skill lacks mechanisms to prevent the AI from losing track of its own instructions.
-
-skill-auditor scans a SKILL.md file for 10 known anti-loss patterns, reports which ones are present and which are missing, and **tells you exactly how to fix each gap** with concrete examples and templates.
-
-**It answers: "Which steps and constraints will this skill lose during AI execution, and how do I fix that?"**
-
 ## The problem
 
-LLMs don't have persistent memory. Every session starts fresh. When an AI agent reads a SKILL.md, it processes the instructions probabilistically — it might follow all steps, or it might skip some, or it might rationalize doing less work than specified.
+You write a SKILL.md, give it to an AI agent, and it works — sometimes. Other times the AI skips steps, drops constraints, or rationalizes doing less work than specified. The root cause: the skill lacks patterns that force compliance.
 
-Over time, the community has discovered specific patterns that reduce this drift: anti-rationalization guards that list excuses the AI will try to use, stage gates that force the AI to stop and wait for confirmation, verification scripts that catch "I'm done" claims that aren't actually true. Projects like [Superpowers](https://github.com/obra/superpowers) (24k+ stars) have formalized many of these.
+## Quick start
 
-But there's no quick way to check: **does this skill have those anti-loss mechanisms, or is it relying on the AI's good behavior?**
+```bash
+npx skills add Foamtor/skill-auditor
+```
 
-## Who uses this
+```bash
+python3 scripts/audit_skill.py /path/to/your-skill/SKILL.md
+```
 
-- **Skill users (primary)**: You installed a third-party skill and the execution is inconsistent. Run skill-auditor to see what anti-loss mechanisms are missing.
-- **Skill authors**: Before publishing, verify your skill has the patterns that make AI comply.
-- **Team leads**: Audit shared skills before rolling them out to the team.
-- **CI pipelines**: Quality gate — reject skills that lack critical anti-loss mechanisms.
+Output:
+
+```
+Type: workflow (has step-by-step process)
+Applicable dimensions: 10/10
+
+  ✅  Anti-rationalization guard
+  ❌  Stage gates               — Missing. AI will run through without pausing.
+  ✅  Verification scripts
+  ❌  Trap checklist             — Missing. AI will repeat known mistakes.
+  ✅  Progressive disclosure
+  ✅  Context engineering
+  ...
+
+Score: 7 pass, 0 partial, 3 fail
+
+Fix suggestions:
+  1. [Critical] Add stage gates — force the AI to stop at key points.
+     Example: see ruanzhu-from-scratch's G0-G4 gate table.
+  2. [Critical] Add trap checklist — document known failure modes.
+     Example: see ai-frontier-notes' "⚠️" sections with dates.
+```
 
 ## What it checks
 
-10 anti-loss dimensions. Each one prevents a specific type of execution drift:
+10 patterns that prevent AI from drifting off-workflow:
 
-| # | Anti-loss mechanism | What gets dropped without it |
-|---|-------------------|----------------------------|
-| 1 | Anti-rationalization guard | Steps — AI invents excuses to skip them |
-| 2 | Stage gates | Confirmations — AI runs through without pausing |
-| 3 | Automated verification | Quality — AI self-reports "passed" without checking |
-| 4 | Decision flowchart | Branching — AI gets lost in vague instructions |
-| 5 | Trap checklist | Knowledge — AI repeats known mistakes |
-| 6 | Progressive disclosure | Key rules — context overload causes AI to ignore them |
-| 7 | Three-layer architecture | Context — skill tries to hold everything |
-| 8 | Runtime hooks | Enforcement — pure text has no code-level backup |
-| 9 | Context Engineering | Priority — key rules buried in long files |
-| 10 | Scoped rules | Relevance — irrelevant rules dilute attention |
+| Pattern | What goes wrong without it |
+|---------|---------------------------|
+| Anti-rationalization guard | AI invents excuses to skip steps |
+| Stage gates | AI finishes without stopping for confirmation |
+| Verification scripts | AI claims "done" without actually checking |
+| Decision flowchart | AI gets lost in vague "then"/"if" instructions |
+| Trap checklist | AI repeats mistakes others already documented |
+| Progressive disclosure | Context overload — AI ignores key rules |
+| Three-layer architecture | Skill tries to hold everything in one file |
+| Runtime hooks | No code-level enforcement, text-only |
+| Context engineering | Key rules buried, file too long |
+| Scoped rules | Irrelevant rules loaded, diluting attention |
 
-Not every skill needs all 10. skill-auditor auto-detects the skill type:
+Not every skill needs all 10. The script auto-detects skill type and only checks what applies:
 
-| Type | Mechanisms checked | Example |
-|------|-------------------|---------|
-| Workflow | 10/10 | Multi-step pipelines, content creation |
-| Tool | 7/10 | Script wrappers, CLI tools |
-| Reference | 4/10 | Cheat sheets, lookups |
-| Pattern | 3/10 | Methodologies, frameworks |
+- **Workflow** (multi-step pipelines): all 10
+- **Tool** (script wrappers): 7
+- **Reference** (cheat sheets): 4
+- **Pattern** (methodologies): 3
+
+## Who uses this
+
+**You installed a third-party skill and it's unreliable.** Run this to find out what's missing.
+
+**You're writing a skill and want to make it robust.** Run this before publishing.
+
+**You're a team lead rolling out shared skills.** Run this as a quality gate.
 
 ## What it does NOT do
 
-- ❌ Does not check factual accuracy
-- ❌ Does not auto-fix skills — it gives specific fix suggestions, you implement them
-- ❌ Does not guarantee compliance — anti-loss mechanisms reduce drift but can't eliminate it entirely
-- ❌ Does not replace manual review — the script detects mechanism presence; whether the mechanism content is strong enough requires human judgment
+- Check factual accuracy of skill content
+- Auto-fix skills (it gives suggestions, you implement)
+- Guarantee compliance (patterns reduce drift but can't eliminate it)
 
 ## Install
 
@@ -68,21 +89,20 @@ Not every skill needs all 10. skill-auditor auto-detects the skill type:
 npx skills add Foamtor/skill-auditor
 ```
 
-Or:
-
 ```bash
 git clone https://github.com/Foamtor/skill-auditor.git ~/.agents/skills/skill-auditor
 ```
 
-## Usage
+Works with any tool that supports the [Agent Skills standard](https://agentskills.io): Claude Code, Codex, Cursor, Gemini CLI, Hermes Agent, and more.
+
+## CI integration
 
 ```bash
-python3 scripts/audit_skill.py /path/to/SKILL.md
-python3 scripts/audit_skill.py /path/to/SKILL.md --json
+python3 scripts/audit_skill.py my-skill/SKILL.md || echo "Skill quality check failed"
 ```
 
-Exit codes: 0 = all critical mechanisms present, 1 = critical mechanisms missing, 2 = parameter error.
+Exit codes: 0 = pass, 1 = critical gaps found, 2 = bad arguments.
 
 ## License
 
-MIT
+[MIT](LICENSE)
