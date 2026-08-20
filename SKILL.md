@@ -1,14 +1,14 @@
 ---
 name: skill-auditor
 description: "检测SKILL.md的指令遵循质量，自动判断skill类型，基于适用维度逐项评分并给出改进建议。触发词：审阅skill、检查skill、skill合规、优化skill"
-version: 1.1.0
+version: 1.2.0
 author: buqx
 tags: [skill, audit, compliance, prompt-engineering, agent-optimization]
 ---
 
-# Skill Auditor — SKILL.md 指令遵循质量检测
+# Skill Auditor — SKILL.md 防丢机制检测
 
-> 自动判断skill类型，只检查适用维度，逐项评分并给出改进建议。
+> 检测SKILL.md是否有防丢机制，预防AI执行时丢失关键环节和约束。面向skill使用者和作者。
 
 ---
 
@@ -193,7 +193,9 @@ AI逐项补充主观判断（脚本无法检测的维度）
 
 ---
 
-## Step 4：输出报告
+## Step 4：输出报告 + 改进方案
+
+报告必须包含两部分：评分和具体改进方案。只报问题不给方案 = 没有价值。
 
 ```
 ## Skill审阅报告：{skill_name}
@@ -206,11 +208,22 @@ AI逐项补充主观判断（脚本无法检测的维度）
 
 总分：X/10 ✅，Y/10 ⚠️，Z/10 ❌
 
-### 改进建议（按优先级排序）
-1. **[最高优先级]** ...
+### 改进方案（按优先级排序）
+
+1. **[最高优先级]** {缺失的防丢机制}
+   - 现状：{当前skill里有什么/缺什么}
+   - 风险：{AI执行时会怎么丢失}
+   - 怎么补：{具体应该加什么内容，给出示例模板或参考}
+   - 参考：{哪个现有skill的写法值得借鉴}
 ```
 
----
+**改进方案的质量标准：**
+- 不是泛泛的"建议加反合理化守卫"，而是给出这个skill场景下应该列出哪些具体借口
+- 不是"参考Superpowers的写法"，而是给出可以直接修改的模板
+- 风险描述要具体："AI执行时会在XX环节跳过XX步骤"，不是"可能有问题"
+| 文件 | 内容 |
+|------|------|
+| `references/skill-publishing-guide.md` | Skill发布指南：GitHub仓库创建、skills.sh/SkillsMP自动索引、Toolsail手动提交。发布新skill时参考。 |
 
 ## Pitfalls
 
